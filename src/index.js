@@ -1,3 +1,6 @@
+import './pages/index.css';
+import {initialCards} from './components/cards.js'
+
 const cardsContainer = document.querySelector('.places__list');
 initialCards.forEach((cardData) => {
     const card = createCard(cardData);
