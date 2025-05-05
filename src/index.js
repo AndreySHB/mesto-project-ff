@@ -1,26 +1,11 @@
 import './pages/index.css';
-import {initialCards} from './components/cards.js'
+import {createCard, initialCards, cardsContainer} from "./components/cards.js";
+import * as common from './components/popup/common.js';
+import * as card from './components/popup/card.js';
+import * as image from './components/popup/image.js';
+import * as profile from './components/popup/profile.js';
 
-const cardsContainer = document.querySelector('.places__list');
 initialCards.forEach((cardData) => {
-    const card = createCard(cardData);
-    cardsContainer.append(card);
+    const newCard = createCard(cardData);
+    cardsContainer.append(newCard);
 });
-
-function createCard(cardData) {
-    const cardTemplate = document.querySelector('#card-template').content;
-    const cardElement = cardTemplate.querySelector('.places__item').cloneNode(true);
-    const cardImg = cardElement.querySelector('.card__image');
-    cardImg.src = cardData.link;
-    cardImg.alt = cardData.name;
-    cardElement.querySelector('.card__title').textContent = cardData.name;
-    cardElement.querySelector('.card__delete-button')
-        .addEventListener(
-            'click', () => deleteCard(cardElement)
-        );
-    return cardElement;
-}
-
-function deleteCard(card) {
-    card.remove()
-}
