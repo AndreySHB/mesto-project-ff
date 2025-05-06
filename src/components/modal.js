@@ -1,30 +1,21 @@
-export function changeVisibility(elem) {
-    elem.classList.toggle('popup_is-opened');
+export function show(elem) {
+    elem.classList.add('popup_is-opened');
+    document.addEventListener('keydown', closePopupEsc);
 }
 
-function hide(elem) {
+export function hide(elem) {
     elem.classList.remove('popup_is-opened');
+    document.removeEventListener('keydown', closePopupEsc);
 }
 
-export function closeAllPopups() {
-    const allPopups = document.querySelectorAll('.popup');
-    allPopups.forEach((elem) => {
-        hide(elem);
-    })
-}
-
-export function clickSomeWhere2Close(evt) {
+export function closeOnOverlayClick(evt, popup) {
     if (evt.target.classList.contains('popup')) {
-        closeAllPopups();
-        document.removeEventListener('click', clickSomeWhere2Close);
+        hide(popup);
     }
 }
 
-export function openImagePopup(evt) {
-    const imagePopup = document.querySelector('.popup_type_image');
-    const imagePopupSrc = imagePopup.querySelector('.popup__image');
-    imagePopupSrc.src = evt.target.src;
-    imagePopupSrc.alt = evt.target.alt;
-    document.addEventListener('click', clickSomeWhere2Close);
-    changeVisibility(imagePopup);
+export function closePopupEsc(evt) {
+    if(evt.key === 'Escape') {
+        hide(document.querySelector('.popup_is-opened'));
+    }
 }
