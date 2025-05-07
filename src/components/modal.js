@@ -15,7 +15,7 @@ export function closeOnOverlayClick(evt, popup) {
 }
 
 export function closePopupEsc(evt) {
-    if(evt.key === 'Escape') {
+    if (evt.key === 'Escape') {
         hide(document.querySelector('.popup_is-opened'));
     }
 }
