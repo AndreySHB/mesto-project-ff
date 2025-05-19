@@ -1,3 +1,9 @@
+.card__like-button-group {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+}
+
 .card__like-button {
   width: 21px;
   height: 18px;
@@ -21,4 +27,13 @@
 
 .card__like-button:hover {
   opacity: 0.6;
+}
+
+.card__like-count {
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 100%;
+  letter-spacing: 0;
+  text-align: center;
 }
