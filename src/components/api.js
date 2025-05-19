@@ -11,8 +11,7 @@ function processResponse(res) {
     if (res.ok) {
         return res.json();
     }
-    console.log(`Error: ${res}`);
-    return null;
+    return Promise.reject(`Error: ${res.status}`);
 }
 
 export function removeLike(cardId) {
