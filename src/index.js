@@ -79,7 +79,6 @@ const newCardUrlFiled = newCardPopup.querySelector('.popup__input_type_url');
 const newCardButton = document.querySelector('.profile__add-button');
 const imagePopupCloseButton = imagePopup.querySelector('.popup__close');
 const popups = document.querySelectorAll('.popup');
-const token = '95ce6314-fbd3-43d0-9ed9-c6e84752f93b';
 
 function openImagePopup(evt) {
     imagePopupSrc.src = evt.target.src;
@@ -125,11 +124,14 @@ profileImageSubmitButton.addEventListener('click', (evt) => {
     const imageUrl = profileImageSubmitButton.closest('.popup_image_edit')
         .querySelector('.popup__input_type_image_url')
         .value
+    profileImageSubmitButton.textContent = 'Сохранение...';
     updateAvatar(imageUrl)
         .then((result) => {
             if (!result) return;
             profileImage.setAttribute('style', `background-image: url(${imageUrl});`);
-        });
+        }).finally(() => {
+        profileImageSubmitButton.textContent = 'Сохранить'
+    });
     hide(profileImagePopup);
 })
 
@@ -141,13 +143,17 @@ profileSubmitButton.addEventListener('click', (evt) => {
         evt.preventDefault();
         const profileNameVal = profileNameInputFiled.value;
         const profileDescriptionVal = profileDescriptionInputField.value
-        updateProfile(profileNameVal, profileDescriptionVal)
+        profileSubmitButton.textContent = 'Сохранение...';
+        updateProfile(profileNameVal, profileDescriptionVal, profileSubmitButton)
             .then((result) => {
                 if (!result) return;
                 profileTitle.textContent = profileNameVal;
                 profileDescription.textContent = profileDescriptionVal;
+            })
+            .finally(() => {
+                profileSubmitButton.textContent = 'Сохранить'
             });
-    hide(profilePopup);
+        hide(profilePopup);
     }
 )
 
@@ -169,6 +175,7 @@ newCardSubmitButton.addEventListener('click', (evt) => {
     cardData.name = newCardNameFiled.value;
     cardData.link = newCardUrlFiled.value;
     const card = createCard(cardData, openImagePopup, profileTitle.textContent);
+    newCardSubmitButton.textContent = 'Сохранение...';
     saveCard(cardData)
         .then((result) => {
             if (!result) return;
@@ -178,6 +185,9 @@ newCardSubmitButton.addEventListener('click', (evt) => {
             cardsContainer.prepend(card);
 
         })
+        .finally(() => {
+            newCardSubmitButton.textContent = 'Сохранить'
+        });
     hide(newCardPopup);
 })
 
