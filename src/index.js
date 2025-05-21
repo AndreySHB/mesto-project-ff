@@ -1,7 +1,7 @@
 import './pages/index.css';
 import {createCard} from './components/card';
 import {closeOnOverlayClick, hide, show} from './components/modal.js';
-import {hideErrors, refreshButtonState, setValidationListeners} from './components/validation';
+import {clearValidation, enableValidation, toggleButtonState} from './components/validation';
 import {fetchCards, fetchCurrentUser, saveCard, updateAvatar, updateProfile} from "./components/api";
 
 const imagePopup = document.querySelector('.popup_type_image');
@@ -30,20 +30,17 @@ const profileInputNameErrorMessageHolder = profilePopup.querySelector('.name-inp
 const profileInputDescription = profilePopup.querySelector('.popup__input_type_description');
 const profileInputDescriptionErrorMessageHolder = profilePopup.querySelector('.description-input-error');
 const profileRegexp = /^[a-zA-Zа-яА-ЯёЁ\- ]*$/u;
-const profileRegexpErrorMessage = 'Поле может содержать только латинские и кириллические буквы, знаки дефиса и пробелы';
 const profileValidationDataHolders = [
     {
         'input': profileInputName,
         'errorMessageHolder': profileInputNameErrorMessageHolder,
-        'regexp': profileRegexp,
-        'regexpErrorMessage': profileRegexpErrorMessage,
+        'pattern': profileRegexp,
         'lockedButton': profileSubmitButton
     },
     {
         'input': profileInputDescription,
         'errorMessageHolder': profileInputDescriptionErrorMessageHolder,
-        'regexp': profileRegexp,
-        'regexpErrorMessage': profileRegexpErrorMessage,
+        'pattern': profileRegexp,
         'lockedButton': profileSubmitButton
     }
 ]
@@ -52,20 +49,19 @@ const profileDescriptionInputField = profilePopup.querySelector('.popup__input_t
 const profileTitle = document.querySelector('.profile__title');
 const profileDescription = document.querySelector('.profile__description');
 const newCardPopup = document.querySelector('.popup_type_new-card');
+const newCardForm = newCardPopup.querySelector('.popup__form');
 const newCardCloseButton = newCardPopup.querySelector('.popup__close');
 const newCardSubmitButton = newCardPopup.querySelector('.popup__button');
 const newCardInputTitle = newCardPopup.querySelector('.popup__input_type_card-name');
 const newCardInputTitleErrorMessageHolder = newCardPopup.querySelector('.title-input-error');
 const newCardInputTitleRegexp = /^[a-zA-Zа-яА-ЯёЁ\- ]*$/u;
-const newCardInputTitleRegexpErrorMessage = 'Поле может содержать только латинские и кириллические буквы, знаки дефиса и пробелы';
 const newCardInputUrl = newCardPopup.querySelector('.popup__input_type_url');
 const newCardInputUrlErrorMessageHolder = newCardPopup.querySelector('.url-input-error');
 const newCardValidationDataHolders = [
     {
         'input': newCardInputTitle,
         'errorMessageHolder': newCardInputTitleErrorMessageHolder,
-        'regexp': newCardInputTitleRegexp,
-        'regexpErrorMessage': newCardInputTitleRegexpErrorMessage,
+        'pattern': newCardInputTitleRegexp,
         'lockedButton': newCardSubmitButton
     },
     {
@@ -86,25 +82,32 @@ function openImagePopup(evt) {
     show(imagePopup);
 }
 
-fetchCurrentUser()
-    .then((result) => {
-        if (!result) return;
-        profileTitle.textContent = result.name;
-        profileDescription.textContent = result.about;
-        profileImage.setAttribute('style', `background-image: url(${result.avatar});`);
-    });
+function setSavingState(button) {
+    button.textContent = 'Сохранение...';
+}
 
-fetchCards()
-    .then((result) => {
-        if (!result) return;
-        result.forEach((cardData) => {
+function setInitialSaveState(button) {
+    button.textContent = 'Сохранить';
+}
+
+Promise.all([fetchCurrentUser(), fetchCards()])
+    .then((results) => {
+        const userData = results[0];
+        profileTitle.textContent = userData.name;
+        profileDescription.textContent = userData.about;
+        profileImage.setAttribute('style', `background-image: url(${userData.avatar});`);
+        const cardDatas = results[1];
+        cardDatas.forEach((cardData) => {
             const newCard = createCard(cardData, openImagePopup, profileTitle.textContent);
             cardsContainer.append(newCard);
         })
+    })
+    .catch((message) => {
+        alert(message)
     });
 
 profileEditButton.addEventListener('click', () => {
-    hideErrors(profileValidationDataHolders, profileSubmitButton);
+    clearValidation(profileValidationDataHolders, profileSubmitButton);
     show(profilePopup);
     profileNameInputFiled.value = profileTitle.textContent;
     profileDescriptionInputField.value = profileDescription.textContent;
@@ -112,7 +115,7 @@ profileEditButton.addEventListener('click', () => {
 
 profileImageEditButton.addEventListener('click', () => {
     show(profileImagePopup);
-    refreshButtonState(profileImageSubmitButton, profileImageValidationDataHolders);
+    toggleButtonState(profileImageSubmitButton, profileImageValidationDataHolders);
 })
 
 profileImageCloseButton.addEventListener('click', () => {
@@ -124,15 +127,18 @@ profileImageSubmitButton.addEventListener('click', (evt) => {
     const imageUrl = profileImageSubmitButton.closest('.popup_image_edit')
         .querySelector('.popup__input_type_image_url')
         .value
-    profileImageSubmitButton.textContent = 'Сохранение...';
+    setSavingState(profileImageSubmitButton);
     updateAvatar(imageUrl)
-        .then((result) => {
-            if (!result) return;
+        .then(() => {
             profileImage.setAttribute('style', `background-image: url(${imageUrl});`);
-        }).finally(() => {
-        profileImageSubmitButton.textContent = 'Сохранить'
-    });
-    hide(profileImagePopup);
+            hide(profileImagePopup);
+        })
+        .catch((message) => {
+            alert(message)
+        })
+        .finally(() => {
+            setInitialSaveState(profileImageSubmitButton);
+        });
 })
 
 profileCloseButton.addEventListener('click', () => {
@@ -143,26 +149,26 @@ profileSubmitButton.addEventListener('click', (evt) => {
         evt.preventDefault();
         const profileNameVal = profileNameInputFiled.value;
         const profileDescriptionVal = profileDescriptionInputField.value
-        profileSubmitButton.textContent = 'Сохранение...';
+        setSavingState(profileSubmitButton);
         updateProfile(profileNameVal, profileDescriptionVal, profileSubmitButton)
-            .then((result) => {
-                if (!result) return;
+            .then(() => {
                 profileTitle.textContent = profileNameVal;
                 profileDescription.textContent = profileDescriptionVal;
             })
+            .catch((message) => {
+                alert(message)
+            })
             .finally(() => {
-                profileSubmitButton.textContent = 'Сохранить'
+                setInitialSaveState(profileSubmitButton);
             });
         hide(profilePopup);
     }
 )
 
-setValidationListeners(profileImageValidationDataHolders);
-setValidationListeners(profileValidationDataHolders);
-
 newCardButton.addEventListener('click', () => {
+    newCardForm.reset();
     show(newCardPopup);
-    refreshButtonState(newCardSubmitButton, newCardValidationDataHolders);
+    toggleButtonState(newCardSubmitButton, newCardValidationDataHolders);
 })
 
 newCardCloseButton.addEventListener('click', () => {
@@ -175,23 +181,23 @@ newCardSubmitButton.addEventListener('click', (evt) => {
     cardData.name = newCardNameFiled.value;
     cardData.link = newCardUrlFiled.value;
     const card = createCard(cardData, openImagePopup, profileTitle.textContent);
-    newCardSubmitButton.textContent = 'Сохранение...';
+    setSavingState(newCardSubmitButton);
     saveCard(cardData)
         .then((result) => {
-            if (!result) return;
             card.id = result._id;
-            newCardNameFiled.value = '';
-            newCardUrlFiled.value = '';
+            newCardForm.reset();
             cardsContainer.prepend(card);
-
+        })
+        .catch((message) => {
+            alert(message)
         })
         .finally(() => {
-            newCardSubmitButton.textContent = 'Сохранить'
+            setInitialSaveState(newCardSubmitButton);
         });
     hide(newCardPopup);
 })
 
-setValidationListeners(newCardValidationDataHolders);
+enableValidation([newCardValidationDataHolders, profileImageValidationDataHolders, profileValidationDataHolders])
 
 imagePopupCloseButton.addEventListener('click', () => {
     hide(imagePopup);

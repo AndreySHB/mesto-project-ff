@@ -16,7 +16,7 @@ function enableButton(button) {
     button.disabled = false;
 }
 
-export function refreshButtonState(button, validationDataHolders) {
+export function toggleButtonState(button, validationDataHolders) {
     const allValid = validationDataHolders.every((validationDataHolder) => {
         return validationDataHolder.input.validity.valid;
     });
@@ -31,12 +31,12 @@ function setValidationListener(validationDataHolder, inputHolderArray) {
     const input = validationDataHolder.input;
     const errorMessageHolder = validationDataHolder.errorMessageHolder;
     const submitButton = validationDataHolder.lockedButton;
-    const regexp = validationDataHolder.regexp;
-    const regexpErrorMessage = validationDataHolder.regexpErrorMessage;
+    const pattern = validationDataHolder.pattern;
+    const patternErrorMessage = input.dataset.errorMessage;
     input.addEventListener('input', () => {
-        const showCustom = regexp && !regexp.test(input.value);
+        const showCustom = pattern && !pattern.test(input.value);
         if (showCustom) {
-            input.setCustomValidity(regexpErrorMessage);
+            input.setCustomValidity(patternErrorMessage);
         } else {
             input.setCustomValidity('');
         }
@@ -45,20 +45,24 @@ function setValidationListener(validationDataHolder, inputHolderArray) {
             disableButton(submitButton);
         } else {
             hideError(input, errorMessageHolder);
-            refreshButtonState(submitButton, inputHolderArray);
+            toggleButtonState(submitButton, inputHolderArray);
         }
     })
 }
 
-export function hideErrors(validationDataHolders, lockedButton) {
+export function clearValidation(validationDataHolders, lockedButton) {
     validationDataHolders.forEach((validationDataHolder) => {
         hideError(validationDataHolder.input, validationDataHolder.errorMessageHolder);
     });
     enableButton(lockedButton);
 }
 
-export function setValidationListeners(validationDataHolders) {
+function setValidationListeners(validationDataHolders) {
     validationDataHolders.forEach((validationDataHolder) => {
         setValidationListener(validationDataHolder, validationDataHolders);
     })
+}
+
+export function enableValidation(validationDataHoldersArr) {
+    validationDataHoldersArr.forEach(setValidationListeners);
 }

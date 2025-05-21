@@ -52,20 +52,29 @@ function like(evt, card) {
         removeLike(cardId)
             .then((result) => {
                 refreshLikes(likeCountElement, result);
+                likedElement.classList.toggle('card__like-button_active');
+            })
+            .catch((message) => {
+                alert(message)
             });
     } else {
         addLike(cardId)
             .then((result) => {
                 refreshLikes(likeCountElement, result);
+                likedElement.classList.toggle('card__like-button_active');
+            })
+            .catch((message) => {
+                alert(message)
             });
     }
-    likedElement.classList.toggle('card__like-button_active');
 }
 
 function deleteCard(card) {
     removeCard(card.id)
-        .then((result) => {
-            if (!result) return;
+        .then(() => {
             card.remove();
+        })
+        .catch((message) => {
+            alert(message)
         })
 }
