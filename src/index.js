@@ -154,6 +154,7 @@ profileSubmitButton.addEventListener('click', (evt) => {
             .then(() => {
                 profileTitle.textContent = profileNameVal;
                 profileDescription.textContent = profileDescriptionVal;
+                hide(profilePopup);
             })
             .catch((message) => {
                 alert(message)
@@ -161,12 +162,12 @@ profileSubmitButton.addEventListener('click', (evt) => {
             .finally(() => {
                 setInitialSaveState(profileSubmitButton);
             });
-        hide(profilePopup);
     }
 )
 
 newCardButton.addEventListener('click', () => {
     newCardForm.reset();
+    clearValidation(newCardValidationDataHolders, newCardSubmitButton);
     show(newCardPopup);
     toggleButtonState(newCardSubmitButton, newCardValidationDataHolders);
 })
@@ -187,6 +188,7 @@ newCardSubmitButton.addEventListener('click', (evt) => {
             card.id = result._id;
             newCardForm.reset();
             cardsContainer.prepend(card);
+            hide(newCardPopup);
         })
         .catch((message) => {
             alert(message)
@@ -194,7 +196,6 @@ newCardSubmitButton.addEventListener('click', (evt) => {
         .finally(() => {
             setInitialSaveState(newCardSubmitButton);
         });
-    hide(newCardPopup);
 })
 
 enableValidation([newCardValidationDataHolders, profileImageValidationDataHolders, profileValidationDataHolders])
